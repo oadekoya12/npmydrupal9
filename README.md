@@ -18,8 +18,10 @@ Composer(https://getcomposer.org/download/)
 ```docker
 Unzip the download and
 change directory to the unzipped location
-If you want to install drupal site like "sitea" run the first script
+If you want to install drupal site like "drupal9.live" run the first script
 If you want to access the container use the second script
+Create a database on the HOST machine with --username drupal9live  --password 8KUgVM9CpZrePbG2lJY8GVnT
+(Please change the password at line 31 on ./drupal/script/drupal file)
 
 ```
 ```bash
@@ -30,13 +32,14 @@ docker compose up -d --build
 ## Platform System
 Windows: - Passed   
 Mac: Passed   
-Ubuntu: Failed   
+Linux: Passed   
 
 ## Update Drupal core and it's general modules/themes
 run
 ```bash
-composer update --working-dir=drupal/ && rm -rvf drupal/web drupal/vendor drupal/drush drupal/.*
+composer update --working-dir=drupal9.live/ && rm -rvf drupal9.live/web drupal/vendor drupal9.live/drush drupal9.live/.*
 ```
+
 it require HOST composer
 
 ## Contributing
