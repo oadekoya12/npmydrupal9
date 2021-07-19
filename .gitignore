@@ -1,0 +1,10 @@
+# ignore Data Directory
+logs/
+ngx/
+php/
+src/
+system/
+
+
+combine.sh
+shellenv.sh

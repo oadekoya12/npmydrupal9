@@ -1,0 +1,58 @@
+# Accept arguments
+while getopts ":s:p:" opt
+  do
+    case $opt in
+      s ) sites=$OPTARG;;
+      p ) port=$OPTARG;;
+    esac
+done
+echo $sites
+for site in $sites;do
+  echo $site
+  echo $ports
+  
+  sed -e "s/\${drupal9}.local/$site/g" -e "s/\listen 80/listen $port/g" -e "s/\${drupal9}/$site/g" ngx/site-available-tpl/drupal9.local > ngx/sites-enabled/${site}
+  dir="src/${site}"
+  mkdir -p ${dir}
+
+  # exit
+
+  # copy composer json and luck file from drupal directory to $site location
+  cp drupal/composer.json ${dir}
+  cp drupal/composer.lock ${dir}
+
+  #run composer update | install
+  composer install --working-dir=${dir}
+  mkdir -p "${dir}/web/sites/default/priv"
+
+  name=$(echo "$site" | sed -e 's/\.//g')
+  rand=`openssl rand -base64 32`
+  # passwd=`openssl rand -base64 18`
+  passwd='8KUgVM9CpZrePbG2lJY8GVnT'
+  cat drupal/settings_default.php > ${dir}/web/sites/default/settings.php
+  echo '$settings["hash_salt"]' "= \"${rand}\";" >> ${dir}/web/sites/default/settings.php
+  
+  sed -e 's/${drupal9}/'$site'/g' -e 's/${drupal9db}/'$name'/g' -e 's/${password}/'"$passwd"'/g' drupal/settings_addon >> ${dir}/web/sites/default/settings.php
+  mkdir -p ${dir}/web/sites/default/files
+  tar -zxf drupal/drupal9files.tar.gz --directory ${dir}/web/sites/default/files
+
+  # # Mysql database schema creation and update it from dump file
+  
+  echo $site
+ 
+  # Add drush command to script.sh file
+  root="/var/www/${site}"
+  drushcom="drush --root=${root}"
+  echo "chown -R nginx:nginx ${root}" > tmp.sh
+  echo ${drushcom} "-y config-set system.performance css.preprocess 0" >> tmp.sh
+  echo ${drushcom} "-y config-set system.performance js.preprocess 0" >> tmp.sh
+  echo ${drushcom} 'cr ' >> tmp.sh
+  echo ${drushcom} 'cron ' >> tmp.sh
+  echo ${drushcom}  'en -y tracker ban book content_moderation media layout_builder layout_discovery admin_toolbar admin_toolbar_tools ctools field_group datetime_range telephone ctools_entity_mask pathauto redirect redirect_404 seckit' >> tmp.sh
+  sed "/#sites/ r tmp.sh" system/local/script.sh > script2.sh
+  mv -f script2.sh system/local/script.sh 
+  rm tmp.sh
+  
+  # custom_module
+  
+done
