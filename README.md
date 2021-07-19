@@ -24,8 +24,7 @@ If you want to access the container use the second script
 ```
 ```bash
 sh env.sh
-sh combine.sh -s sitea
-docker exec -it web bash
+docker compose up -d --build  
 ```
 
 ## Platform System
